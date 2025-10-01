@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WireGuard Epic Generator</title>
+<style>
+:root {
+  --bg-dark: #0d1117;
+  --bg-light: #f5f7fb;
+  --text-dark: #e6eef6;
+  --text-light: #1e293b;
+  --btn-glass: rgba(255,255,255,0.15);
+  --blue: #3b82f6;
+  --white: #ffffff;
+  --mono: "Courier New", monospace;
+  --font: Tahoma, sans-serif;
+}
+body {
+  margin:0; font-family: var(--font);
+  background: var(--bg-dark); color: var(--text-dark);
+  display:flex; justify-content:center; align-items:center;
+  min-height:100vh; transition:0.3s;
+}
+body.light {
+  background: var(--bg-light); color: var(--text-light);
+}
+.wrap {
+  width:100%; max-width:800px; padding:20px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(8px);
+}
+header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:15px;
+}
+.logo { font-weight:700; font-size:18px; }
+.theme-btn {
+  padding:8px 14px; border:none; border-radius:10px;
+  background: linear-gradient(135deg, var(--blue), var(--white));
+  color:#000; cursor:pointer; font-weight:600;
+}
+.card { padding:16px; background:rgba(255,255,255,0.04); border-radius:10px; }
+.form-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+.form-row label { width:70px; font-size:13px; }
+.form-row input, .form-row select {
+  flex:1; padding:8px; border-radius:8px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.08); color:inherit;
+}
+textarea#cfg {
+  width:100%; height:240px; border-radius:8px; padding:10px;
+  background:#0f172a; color:#22d3ee; font-family:var(--mono);
+  font-size:13px; margin-top:12px;
+}
+.ipBtnGroup { display:flex; gap:10px; margin:12px 0; align-items:center; }
+.btn, .ghost {
+  padding:10px 16px; border-radius:10px; border:none;
+  cursor:pointer; font-weight:600;
+  background: linear-gradient(135deg, var(--blue), var(--white));
+  color:#000;
+}
+.ghost {
+  background:var(--btn-glass); border:1px solid rgba(255,255,255,0.3);
+  color:inherit;
+}
+#loginPage {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:var(--bg-dark); color:var(--text-dark);
+}
+body.light #loginPage { background:var(--bg-light); color:var(--text-light); }
+.login-box {
+  background:rgba(255,255,255,0.08); padding:24px; border-radius:12px;
+  display:flex; flex-direction:column; gap:12px; backdrop-filter: blur(8px);
+}
+.login-box input {
+  padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1); color:inherit;
+}
+</style>
+</head>
+<body>
+
+<!-- صفحه لاگین -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>ورود به پنل</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button class="btn" onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- پنل اصلی -->
+<div id="mainPanel" class="wrap" style="display:none;">
+  <header>
+    <div class="logo">Epic WG Panel</div>
+    <button class="theme-btn" id="themeToggle">🌙 / ☀️</button>
+  </header>
+
+  <div class="card">
+    <div class="form-row">
+      <label>Days</label>
+      <input id="days" type="number" min="1" value="7">
+    </div>
+    <div class="form-row">
+      <label>GB</label>
+      <input id="gigs" type="number" min="1" value="5">
+    </div>
+    <div class="form-row">
+      <label>Users</label>
+      <input id="users" type="number" min="1" value="1">
+    </div>
+    <div class="form-row">
+      <label>MTU</label>
+      <select id="mtu">
+        <option value="1280">1280</option>
+        <option value="1299">1299</option>
+        <option value="1300">1300</option>
+        <option value="1332">1332</option>
+        <option value="1400">1400</option>
+        <option value="1472">1472</option>
+      </select>
+    </div>
+
+    <div class="ipBtnGroup">
+      <button class="btn" id="genIpBtn">IP</button>
+      <div id="ipDisplay">—</div>
+      <button class="ghost" id="copyIpBtn">Copy</button>
+    </div>
+
+    <div class="ipBtnGroup">
+      <button class="btn" id="genCfgBtn">Generate</button>
+      <button class="btn" id="downloadBtn">Download</button>
+    </div>
+
+    <textarea id="cfg" readonly></textarea>
+  </div>
+</div>
+
+<script>
+function login(){
+  const u=document.getElementById("username").value;
+  const p=document.getElementById("password").value;
+  if(u==="EpicTeam" && p==="2025"){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("mainPanel").style.display="block";
+  } else {
+    alert("نام کاربری یا رمز اشتباه است!");
+  }
+}
+
+const cfgArea=document.getElementById('cfg');
+const genCfgBtn=document.getElementById('genCfgBtn');
+const downloadBtn=document.getElementById('downloadBtn');
+const genIpBtn=document.getElementById('genIpBtn');
+const ipDisplay=document.getElementById('ipDisplay');
+const copyIpBtn=document.getElementById('copyIpBtn');
+const themeToggle=document.getElementById('themeToggle');
+
+let lastGenerated=null;let lastIP='—';
+
+function genBase64Key(){
+  const arr=new Uint8Array(32);crypto.getRandomValues(arr);
+  let bin='';arr.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin);
+}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function randHex4(){return rand(0,0xFFFF).toString(16).padStart(4,'0');}
+function randNum(len=4){return Math.floor(Math.random()*Math.pow(10,len)).toString().padStart(len,"0");}
+
+function buildConfig(){
+  const days=parseInt(document.getElementById('days').value||1);
+  const gigs=parseInt(document.getElementById('gigs').value||1);
+  const users=parseInt(document.getElementById('users').value||1);
+  const mtu=document.getElementById('mtu').value;
+
+  const randOct=rand(2,254);
+  const endpoint=`4.170.16.${randOct}:40600`;
+  const address=`4.170.16.${randOct}/32`;
+
+  const privateKey=genBase64Key();
+  const publicKey=genBase64Key();
+
+  const dns4=`151.249.128.${rand(1,254)}`;
+  const dns6=`2a02:bf0:22b7::${randHex4()}:${randHex4()}:${randHex4()}:${randHex4()}`;
+  const dns=`4.2.2.4, ${dns4}, ${dns6}`;
+
+  const allowedV4=rand(2,254);
+  const allowedIPs=`172.16.0.${allowedV4}/32`;
+
+  const header=`# Users: ${users} | ${gigs}GB | Valid ${days} Days`;
+  const filename=`User_Epic_${randNum(4)}.conf`;
+  const cfg=`${header}\n\n[Interface]\nPrivateKey = ${privateKey}\nAddress = ${address}\nMTU = ${mtu}\nDNS = ${dns}\n\n[Peer]\nPublicKey = ${publicKey}\nEndpoint = ${endpoint}\nAllowedIPs = ${allowedIPs}\n`;
+  return {cfg, filename};
+}
+
+genCfgBtn.addEventListener('click',()=>{
+  lastGenerated=buildConfig();cfgArea.value=lastGenerated.cfg;
+});
+downloadBtn.addEventListener('click',()=>{
+  if(!lastGenerated){lastGenerated=buildConfig();cfgArea.value=lastGenerated.cfg;}
+  const blob=new Blob([lastGenerated.cfg],{type:'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=lastGenerated.filename;
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+genIpBtn.addEventListener('click',()=>{
+  const oct=rand(2,254);
+  lastIP=`4.170.16.${oct}`;ipDisplay.textContent=lastIP;
+});
+copyIpBtn.addEventListener('click',()=>{
+  if(lastIP&&lastIP!=='—'){navigator.clipboard.writeText(lastIP).then(()=>{alert(`IP ${lastIP} کپی شد`);});}
+  else alert('ابتدا یک IP تولید کنید.');
+});
+themeToggle.addEventListener('click',()=>{
+  document.body.classList.toggle('light');
+});
+</script>
+</body>
+</html>
