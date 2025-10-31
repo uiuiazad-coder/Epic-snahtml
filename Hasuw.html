@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>rhtmlPANEL - Mobile HTML Hosting</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script>
+tailwind.config={theme:{extend:{fontFamily:{inter:["Inter","sans-serif"]},animation:{"slide-up":"slideUp 0.3s ease-out","fade-in":"fadeIn 0.3s ease-out"}}}}
+</script>
+  <style>
+body{font-family:'Inter',sans-serif;touch-action:pan-y;user-select:none;-webkit-tap-highlight-color:transparent}
+.gradient-bg{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+.glass-effect{backdrop-filter:blur(15px);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.material-icons{font-family:'Material Icons';font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr}
+.custom-input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;transition:all .2s ease}
+.custom-input:focus{outline:none;border-color:#8b5cf6;background:rgba(255,255,255,.15)}
+.mobile-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px)}
+.btn-primary{background:linear-gradient(135deg,#8b5cf6,#3b82f6);transition:all .2s ease}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);transition:all .2s ease}
+.btn-secondary:active{transform:scale(.98);background:rgba(255,255,255,.15)}
+</style>
+ </head>
+ <body class="gradient-bg min-h-screen">
+  <header class="glass-effect border-b border-white/15 p-4 sticky top-0 z-40">
+   <div class="flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+     <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+      <span class="text-white font-bold text-lg">R</span>
+     </div>
+     <div>
+      <h1 class="text-xl font-bold text-white">rhtmlPANEL</h1>
+      <p class="text-purple-200 text-xs">HTML Hosting</p>
+     </div>
+    </div>
+    <button onclick="logout()" class="btn-secondary text-white px-3 py-2 rounded-lg text-sm"><i class="material-icons text-sm">logout</i></button>
+   </div>
+  </header>
+  <div class="p-4 space-y-4">
+   <button onclick="openUploadModal()" class="w-full btn-primary text-white py-4 rounded-2xl font-medium text-lg"><i class="material-icons mr-2">cloud_upload</i> Upload HTML File</button>
+   <div class="mobile-card rounded-2xl p-4">
+    <div class="flex items-center justify-between mb-3">
+     <h3 class="text-white font-medium flex items-center"><i class="material-icons mr-2 text-purple-400">storage</i> Storage</h3>
+     <span class="text-purple-200 text-sm" id="storageInfo">--</span>
+    </div>
+    <div class="w-full bg-gray-700 rounded-full h-2">
+     <div id="storageBar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full" style="width:0%"></div>
+    </div>
+   </div>
+   <div class="grid grid-cols-2 gap-4">
+    <div class="mobile-card rounded-2xl p-4 text-center">
+     <div class="text-2xl font-bold text-white" id="activeFiles">0</div>
+     <div class="text-purple-200 text-sm">Active Files</div>
+    </div>
+    <div class="mobile-card rounded-2xl p-4 text-center">
+     <div class="text-2xl font-bold text-white" id="totalFiles">0</div>
+     <div class="text-purple-200 text-sm">Total Files</div>
+    </div>
+   </div>
+   <div class="mobile-card rounded-2xl p-4">
+    <h3 class="text-white font-medium mb-4 flex items-center"><i class="material-icons mr-2 text-blue-400">folder</i> Your Files</h3>
+    <div class="text-center py-8" id="emptyState">
+     <div class="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="material-icons text-2xl text-purple-300">description</i>
+     </div>
+     <p class="text-purple-200 text-sm mb-4">No files uploaded yet</p>
+     <button onclick="openUploadModal()" class="btn-secondary text-white px-4 py-2 rounded-lg text-sm">Upload First File</button>
+    </div>
+    <div class="space-y-3 hidden" id="filesList"></div>
+   </div>
+   <div class="mobile-card rounded-2xl p-4">
+    <h3 class="text-white font-medium mb-4 flex items-center"><i class="material-icons mr-2 text-yellow-400">settings</i> Settings</h3>
+    <div class="space-y-3">
+     <button onclick="exportData()" class="w-full btn-secondary text-white py-3 rounded-xl text-sm"><i class="material-icons text-sm mr-2">download</i> Export Data</button>
+     <button onclick="clearAll()" class="w-full btn-secondary text-white py-3 rounded-xl text-sm"><i class="material-icons text-sm mr-2">clear_all</i> Clear All Files</button>
+    </div>
+   </div>
+  </div>
+  <div id="uploadModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-end justify-center z-50">
+   <div class="glass-effect rounded-t-3xl p-6 w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+    <div class="w-12 h-1 bg-white/30 rounded-full mx-auto mb-6"></div>
+    <h3 class="text-xl font-bold text-white mb-6 text-center">Upload HTML File</h3>
+    <div class="border-2 border-dashed border-purple-400/50 rounded-2xl p-6 text-center mb-6 active:bg-purple-500/10" id="dropZone">
+     <i class="material-icons text-4xl text-purple-300 mb-3">description</i>
+     <p class="text-white mb-2 font-medium">Tap to select HTML file</p>
+     <p class="text-purple-200 text-sm">Only .html files accepted</p>
+     <input type="file" class="hidden" id="fileInput" accept=".html">
+    </div>
+    <div class="mb-6">
+     <label class="block text-purple-200 text-sm mb-3 font-medium">Link Expiration Time:</label> <select id="timeSelect" class="w-full custom-input rounded-xl px-4 py-3 mb-3"> <option value="60">1 Hour</option> <option value="360">6 Hours</option> <option value="1440">1 Day</option> <option value="10080" selected>1 Week</option> <option value="43200">1 Month</option> <option value="525600">1 Year</option> <option value="custom">Custom...</option> </select>
+     <div id="customTimeInputs" class="hidden space-y-3">
+      <div class="grid grid-cols-3 gap-3">
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Days</label> <input type="number" id="customDays" min="0" max="365" value="0" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Hours</label> <input type="number" id="customHours" min="0" max="23" value="1" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Minutes</label> <input type="number" id="customMinutes" min="0" max="59" value="0" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+      </div>
+     </div>
+    </div>
+    <div class="flex space-x-3">
+     <button onclick="closeUploadModal()" class="flex-1 btn-secondary text-white py-4 rounded-xl">Cancel</button>
+     <button onclick="confirmUpload()" class="flex-1 btn-primary text-white py-4 rounded-xl font-medium">Upload File</button>
+    </div>
+   </div>
+  </div>
+  <div id="loginModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
+   <div class="glass-effect rounded-3xl p-8 w-full max-w-sm mx-4 animate-slide-up">
+    <div class="text-center mb-8">
+     <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+      <span class="text-white font-bold text-2xl">R</span>
+     </div>
+     <h2 class="text-2xl font-bold text-white mb-2">rhtmlPANEL</h2>
+     <p class="text-purple-200 text-sm">Please login to continue</p>
+    </div>
+    <form onsubmit="handleLogin(event)" class="space-y-4">
+     <div>
+      <label class="block text-purple-200 text-sm mb-2">Username</label> <input type="text" id="username" class="w-full custom-input rounded-xl px-4 py-3" placeholder="Enter username" required>
+     </div>
+     <div>
+      <label class="block text-purple-200 text-sm mb-2">Password</label> <input type="password" id="password" class="w-full custom-input rounded-xl px-4 py-3" placeholder="Enter password" required>
+     </div>
+     <button type="submit" class="w-full btn-primary text-white py-4 rounded-xl font-medium text-lg"><i class="material-icons mr-2">login</i> Login</button>
+    </form>
+   </div>
+  </div>
+  <div id="timeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-end justify-center z-50">
+   <div class="glass-effect rounded-t-3xl p-6 w-full max-h-[80vh] overflow-y-auto animate-slide-up">
+    <div class="w-12 h-1 bg-white/30 rounded-full mx-auto mb-6"></div>
+    <h3 class="text-xl font-bold text-white mb-6 text-center">Edit Expiration Time</h3>
+    <div class="mb-6">
+     <label class="block text-purple-200 text-sm mb-3">New expiration time:</label> <select id="newTimeSelect" class="w-full custom-input rounded-xl px-4 py-3 mb-3"> <option value="60">1 Hour</option> <option value="360">6 Hours</option> <option value="1440">1 Day</option> <option value="10080">1 Week</option> <option value="43200">1 Month</option> <option value="custom">Custom...</option> </select>
+     <div id="editCustomTimeInputs" class="hidden space-y-3">
+      <div class="grid grid-cols-3 gap-3">
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Days</label> <input type="number" id="editCustomDays" min="0" max="365" value="0" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Hours</label> <input type="number" id="editCustomHours" min="0" max="23" value="1" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+       <div>
+        <label class="block text-purple-200 text-xs mb-1">Minutes</label> <input type="number" id="editCustomMinutes" min="0" max="59" value="0" class="w-full custom-input rounded-lg px-3 py-2 text-sm">
+       </div>
+      </div>
+     </div>
+    </div>
+    <div class="flex space-x-3">
+     <button onclick="closeTimeModal()" class="flex-1 btn-secondary text-white py-4 rounded-xl">Cancel</button>
+     <button onclick="updateTime()" class="flex-1 btn-primary text-white py-4 rounded-xl font-medium">Update Time</button>
+    </div>
+   </div>
+  </div>
+  <script>
+let currentEditingFile=null;
+let uploadedFiles=[];
+let isLoggedIn=localStorage.getItem("rhtmlpanel_logged_in")==="true";
+if(!isLoggedIn){showLoginPage()}
+document.addEventListener("gesturestart",function(e){e.preventDefault()});
+document.addEventListener("gesturechange",function(e){e.preventDefault()});
+document.addEventListener("gestureend",function(e){e.preventDefault()});
+function generateRandomCode(){const chars="abcdefghijklmnopqrstuvwxyz0123456789";let r="";for(let i=0;i<5;i++){r+=chars.charAt(Math.floor(Math.random()*chars.length))}return r}
+document.getElementById("timeSelect").addEventListener("change",function(){const c=document.getElementById("customTimeInputs");if(this.value==="custom"){c.classList.remove("hidden")}else{c.classList.add("hidden")}})
+document.getElementById("newTimeSelect").addEventListener("change",function(){const c=document.getElementById("editCustomTimeInputs");if(this.value==="custom"){c.classList.remove("hidden")}else{c.classList.add("hidden")}})
+function openUploadModal(){document.getElementById("uploadModal").classList.remove("hidden");document.getElementById("uploadModal").classList.add("flex");document.body.style.overflow="hidden"}
+function closeUploadModal(){document.getElementById("uploadModal").classList.add("hidden");document.getElementById("uploadModal").classList.remove("flex");document.body.style.overflow="auto";document.getElementById("fileInput").value="";document.getElementById("timeSelect").value="10080";document.getElementById("customTimeInputs").classList.add("hidden")}
+function logout(){if(confirm("Are you sure you want to logout?")){localStorage.removeItem("rhtmlpanel_logged_in");isLoggedIn=false;showLoginPage();showNotification("Logged out successfully!","success")}}
+function showLoginPage(){document.getElementById("loginModal").style.display="flex";document.body.style.overflow="hidden"}
+function hideLoginPage(){document.getElementById("loginModal").style.display="none";document.body.style.overflow="auto"}
+function handleLogin(e){e.preventDefault();const u=document.getElementById("username").value;const p=document.getElementById("password").value;if(u==="admin"&&p==="pass299388"){localStorage.setItem("rhtmlpanel_logged_in","true");isLoggedIn=true;hideLoginPage();showNotification("Login successful! Welcome to rhtmlPANEL!","success");document.getElementById("username").value="";document.getElementById("password").value=""}else{showNotification("Invalid username or password!","error");const f=e.target;f.style.animation="shake .5s ease-in-out";setTimeout(()=>{f.style.animation=""},500)}}
+function calculateExpirationMinutes(v){if(v==="custom"){const d=parseInt(document.getElementById("customDays").value)||0;const h=parseInt(document.getElementById("customHours").value)||0;const m=parseInt(document.getElementById("customMinutes").value)||0;return d*1440+h*60+m}return parseInt(v)}
+function formatTimeText(minutes){if(minutes<60)return minutes+" minutes";if(minutes<1440)return Math.floor(minutes/60)+" hours";return Math.floor(minutes/1440)+" days"}
+async function confirmUpload(){const fileInput=document.getElementById("fileInput");const timeSelect=document.getElementById("timeSelect");if(!fileInput.files[0]){showNotification("Please select an HTML file!","warning");return}const file=fileInput.files[0];if(!file.name.endsWith(".html")){showNotification("Only HTML files are allowed!","error");return}const expirationMinutes=calculateExpirationMinutes(timeSelect.value);const fd=new FormData();fd.append("file",file);fd.append("ttl",String(expirationMinutes));const res=await fetch("/api/upload",{method:"POST",body:fd});if(!res.ok){showNotification("Upload failed!","error");return}const data=await res.json();showNotification("File uploaded! "+data.url,"success");await refreshList();closeUploadModal()}
+function addFileToDOM(fileData){const filesList=document.getElementById("filesList");const emptyState=document.getElementById("emptyState");emptyState.classList.add("hidden");filesList.classList.remove("hidden");const fileElement=document.createElement("div");fileElement.className="mobile-card rounded-xl p-4";fileElement.id="file-"+fileData.code;const timeAgo=getTimeAgo(new Date(fileData.upload));const timeLeft=getTimeLeft(fileData.expiresAt);const url=location.origin+"/"+fileData.code;fileElement.innerHTML=`
+<div class="flex items-start justify-between mb-3">
+<div class="flex items-center space-x-3 flex-1 min-w-0">
+<div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+<i class="material-icons text-white text-lg">description</i>
+</div>
+<div class="min-w-0 flex-1">
+<h3 class="text-white font-medium text-sm truncate">${fileData.name}</h3>
+<p class="text-purple-200 text-xs truncate">${url}</p>
+</div>
+</div>
+<div class="flex items-center space-x-1 flex-shrink-0">
+<span class="${fileData.isActive?'text-green-300':'text-red-300'} text-xs">${fileData.isActive?'Active':'Off'}</span>
+<button onclick="toggleStatus('${fileData.code}')" class="relative inline-flex h-5 w-9 items-center rounded-full ${fileData.isActive?'bg-green-500':'bg-gray-500'} transition-colors">
+<span class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${fileData.isActive?'translate-x-5':'translate-x-1'}"></span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="text-purple-300 text-xs">
+<span>Uploaded: ${timeAgo}</span><br>
+<span>Expires: ${timeLeft}</span>
+</div>
+<div class="flex items-center space-x-2">
+<button onclick="copyLink('${url}')" class="btn-secondary p-2 rounded-lg">
+<i class="material-icons text-sm">content_copy</i>
+</button>
+<button onclick="editTime('${fileData.code}')" class="btn-secondary p-2 rounded-lg">
+<i class="material-icons text-sm">schedule</i>
+</button>
+<button onclick="deleteFile('${fileData.code}')" class="btn-secondary p-2 rounded-lg text-red-300">
+<i class="material-icons text-sm">delete</i>
+</button>
+</div>
+</div>`;
+filesList.appendChild(fileElement)}
+function getTimeAgo(date){const now=new Date();const diff=now-date;const minutes=Math.floor(diff/60000);const hours=Math.floor(minutes/60);const days=Math.floor(hours/24);if(days>0)return days+" day"+(days>1?"s":"")+" ago";if(hours>0)return hours+" hour"+(hours>1?"s":"")+" ago";return minutes+" minute"+(minutes>1?"s":"")+" ago"}
+function getTimeLeft(expiresAt){if(!expiresAt||expiresAt===0)return "No expiry";const diff=expiresAt-Date.now();if(diff<=0)return "Expired";const minutes=Math.floor(diff/60000);const hours=Math.floor(minutes/60);const days=Math.floor(hours/24);if(days>0)return days+" day"+(days>1?"s":"")+" left";if(hours>0)return hours+" hour"+(hours>1?"s":"")+" left";return minutes+" minute"+(minutes>1?"s":"")+" left"}
+function updateStatsUI(){const active=uploadedFiles.filter(f=>f.isActive).length;const total=uploadedFiles.length;document.getElementById("activeFiles").textContent=active;document.getElementById("totalFiles").textContent=total;const used=uploadedFiles.reduce((s,f)=>s+(f.size||0),0);const usedGB=(used/1024/1024/1024);const capGB=1;const percent=Math.min(100,(usedGB/capGB)*100);document.getElementById("storageInfo").textContent=usedGB.toFixed(2)+" GB / "+capGB+" TB";document.getElementById("storageBar").style.width=percent+"%"}
+async function toggleStatus(code){const res=await fetch("/api/toggle",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code})});if(!res.ok){showNotification("Toggle failed","error");return}await refreshList();showNotification("Status updated","success")}
+function copyLink(link){navigator.clipboard.writeText(link).then(()=>{showNotification("Link copied to clipboard!","success")})}
+function editTime(code){currentEditingFile=code;document.getElementById("timeModal").classList.remove("hidden");document.getElementById("timeModal").classList.add("flex");document.body.style.overflow="hidden"}
+function closeTimeModal(){document.getElementById("timeModal").classList.add("hidden");document.getElementById("timeModal").classList.remove("flex");document.body.style.overflow="auto";currentEditingFile=null;document.getElementById("newTimeSelect").value="10080";document.getElementById("editCustomTimeInputs").classList.add("hidden")}
+async function updateTime(){if(!currentEditingFile)return;const timeSelect=document.getElementById("newTimeSelect");let minutes;if(timeSelect.value==="custom"){const d=parseInt(document.getElementById("editCustomDays").value)||0;const h=parseInt(document.getElementById("editCustomHours").value)||0;const m=parseInt(document.getElementById("editCustomMinutes").value)||0;minutes=d*1440+h*60+m}else{minutes=parseInt(timeSelect.value)}const res=await fetch("/api/update-ttl",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code:currentEditingFile,minutes})});if(!res.ok){showNotification("Update failed","error");return}showNotification("Expiration updated to "+formatTimeText(minutes)+"!","success");closeTimeModal();await refreshList()}
+async function deleteFile(code){if(!confirm("Are you sure you want to delete this file?"))return;const res=await fetch("/api/delete",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code})});if(!res.ok){showNotification("Delete failed","error");return}await refreshList();showNotification("File deleted successfully!","success")}
+async function exportData(){const res=await fetch("/api/export");if(!res.ok){showNotification("Export failed","error");return}const blob=await res.blob();const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="rhtmlpanel-export.json";a.click();URL.revokeObjectURL(url);showNotification("Data exported successfully!","success")}
+async function clearAll(){if(!confirm("Are you sure you want to delete all files? This action cannot be undone."))return;const list=uploadedFiles.slice();for(const f of list){await fetch("/api/delete",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({code:f.code})})}await refreshList();showNotification("All files cleared!","success")}
+function showNotification(message,type){const n=document.createElement("div");n.className="fixed top-4 right-4 z-50 glass-effect rounded-xl p-4 text-white animate-slide-up max-w-sm";let icon="info";if(type==="success"){n.classList.add("border-green-400");icon="check_circle"}else if(type==="warning"){n.classList.add("border-yellow-400");icon="warning"}else if(type==="error"){n.classList.add("border-red-400");icon="error"}n.innerHTML='<div class="flex items-center space-x-3"><i class="material-icons text-lg">'+icon+'</i><span class="flex-1">'+message+'</span><button onclick="this.parentElement.parentElement.remove()" class="text-white/70 hover:text-white"><i class="material-icons text-lg">close</i></button></div>';document.body.appendChild(n);setTimeout(()=>{if(n.parentElement){n.remove()}},5000)}
+const dropZone=document.getElementById("dropZone");const fileInput=document.getElementById("fileInput");
+dropZone.addEventListener("click",()=>fileInput.click());
+dropZone.addEventListener("dragover",(e)=>{e.preventDefault();dropZone.classList.add("border-purple-400","bg-purple-500/10")});
+dropZone.addEventListener("dragleave",()=>{dropZone.classList.remove("border-purple-400","bg-purple-500/10")});
+dropZone.addEventListener("drop",(e)=>{e.preventDefault();dropZone.classList.remove("border-purple-400","bg-purple-500/10");const files=e.dataTransfer.files;if(files.length>0&&files[0].name.endsWith(".html")){fileInput.files=files;showNotification("File "+files[0].name+" selected!","success")}else{showNotification("Only HTML files are allowed!","error")}});
+async function refreshList(){const r=await fetch("/api/list");if(!r.ok)return;const data=await r.json();uploadedFiles=data.files||[];const filesList=document.getElementById("filesList");filesList.innerHTML="";if(uploadedFiles.length===0){document.getElementById("emptyState").classList.remove("hidden");filesList.classList.add("hidden")}else{document.getElementById("emptyState").classList.add("hidden");filesList.classList.remove("hidden");uploadedFiles.forEach(addFileToDOM)}updateStatsUI()}
+document.addEventListener("DOMContentLoaded",async()=>{await refreshList();showNotification("Welcome to rhtmlPANEL!","success")});
+</script>
+ </body>
+</html>
